@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hyprland Live Wallpaper </title>
+  <title>Hyprland Live Wallpaper Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     /* Custom scrollbar for modern aesthetics */
@@ -20,12 +20,21 @@
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-sm font-semibold mb-6">
       <span>⚡ For Arch Linux & Hyprland</span>
     </div>
+    
     <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500 mb-4 tracking-tight">
       Hyprland Live Wallpaper Hub
     </h1>
-    <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
+    
+    <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto mb-8">
       Install hardware-accelerated, dynamic live wallpapers instantly using a single command in your terminal.
     </p>
+
+    <!-- Global Revert / Fallback Control Button -->
+    <div class="inline-block">
+      <button onclick="copyRevertCommand(this)" class="px-5 py-2.5 bg-gray-900 border border-gray-800 hover:border-red-500/50 hover:bg-red-950/20 text-gray-400 hover:text-red-400 font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500/30">
+        Copy Revert / Disable Command
+      </button>
+    </div>
   </header>
 
   <!-- Gallery Section -->
@@ -77,9 +86,18 @@
                 <h3 class="text-lg font-bold text-gray-100 tracking-tight mb-1 group-hover:text-teal-400 transition-colors duration-200">${details.title}</h3>
                 <p class="text-[10px] font-mono text-gray-600 mb-6">HASH ID: ${hash}</p>
               </div>
-              <button onclick="copyCommand('${hash}', this)" class="w-full py-3 bg-gray-800/80 hover:bg-teal-600 text-gray-200 hover:text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
-                Copy Setup Command
-              </button>
+              
+              <div class="space-y-2">
+                <!-- Primary Auto Setup Command -->
+                <button onclick="copyCommand('${hash}', this)" class="w-full py-3 bg-gray-800/80 hover:bg-teal-600 text-gray-200 hover:text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
+                  Copy Setup Command
+                </button>
+                
+                <!-- Fallback Direct CDN Video URL (For other desktop environments/WWMs) -->
+                <button onclick="copyDirectLink('${details.url}', this)" class="w-full py-2 bg-gray-950 border border-gray-800/80 hover:border-gray-700 text-gray-400 hover:text-gray-200 font-medium rounded-xl text-[10px] uppercase tracking-wider transition-all duration-200 focus:outline-none">
+                  Copy Direct Media Link
+                </button>
+              </div>
             </div>
           `;
           grid.appendChild(card);
@@ -89,6 +107,7 @@
       }
     }
 
+    // Copies the dynamic hyprland setup command
     function copyCommand(hash, button) {
       const command = `curl -sSL ${API_URL}/install.sh | bash -s -- ${hash}`;
       navigator.clipboard.writeText(command).then(() => {
@@ -101,6 +120,39 @@
           button.innerText = originalText;
           button.classList.remove('bg-teal-600');
           button.classList.add('bg-gray-800/80', 'hover:bg-teal-600');
+        }, 2000);
+      });
+    }
+
+    // Fallback: Copies the raw Hugging Face CDN URL directly
+    function copyDirectLink(url, button) {
+      navigator.clipboard.writeText(url).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Direct Link Copied! ✓";
+        button.classList.remove('text-gray-400', 'border-gray-800/80');
+        button.classList.add('text-teal-400', 'border-teal-500/30');
+        
+        setTimeout(() => {
+          button.innerText = originalText;
+          button.classList.remove('text-teal-400', 'border-teal-500/30');
+          button.classList.add('text-gray-400', 'border-gray-800/80');
+        }, 2000);
+      });
+    }
+
+    // Fallback: Copies the revert command to completely stop and uninstall mpvpaper autostart
+    function copyRevertCommand(button) {
+      const command = `curl -sSL ${API_URL}/install.sh | bash -s -- 0`;
+      navigator.clipboard.writeText(command).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Revert Command Copied! ✓";
+        button.classList.remove('text-gray-400', 'border-gray-800');
+        button.classList.add('text-red-400', 'border-red-500/50');
+        
+        setTimeout(() => {
+          button.innerText = originalText;
+          button.classList.remove('text-red-400', 'border-red-500/50');
+          button.classList.add('text-gray-400', 'border-gray-800');
         }, 2000);
       });
     }
