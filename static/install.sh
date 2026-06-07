@@ -45,11 +45,7 @@ mkdir -p "$NEW_DIR"
 if [ -d "$LEGACY_DIR" ]; then
     echo -e "${CYAN}[~] Legacy installation directory detected: $LEGACY_DIR${RESET}"
     echo -e "${YELLOW}[*] Migrating wallpapers to AeroDesk directory...${RESET}"
-    
-    # Move actual background files, skipping old symlinks
     find "$LEGACY_DIR" -type f ! -name "current_wallpaper" -exec cp -p -t "$NEW_DIR" {} + 2>/dev/null || true
-    
-    # Safely remove the legacy path
     rm -rf "$LEGACY_DIR"
     echo -e "${GREEN}[✔] Migrated assets and deleted old live-wallpapers directory.${RESET}"
 fi
@@ -58,7 +54,8 @@ fi
 echo -e "${YELLOW}[*] Cloning source files...${RESET}"
 TEMP_BUILD_DIR=$(mktemp -d)
 
-git clone https://github.com/Maazwaheed/live-wallpaper-assets.git "$TEMP_BUILD_DIR" 2>/dev/null || true
+# corrected URL: cloning your CLI repository instead of the Hugging Face dataset
+git clone https://github.com/Maazwaheed/aerodesk-cli.git "$TEMP_BUILD_DIR" 2>/dev/null || true
 
 BUILD_PATH="$TEMP_BUILD_DIR"
 if [ ! -f "$BUILD_PATH/main.go" ] && [ -f "./main.go" ]; then
@@ -68,6 +65,13 @@ fi
 echo -e "${YELLOW}[*] Building Go CLI...${RESET}"
 if [ -d "$BUILD_PATH" ]; then
     cd "$BUILD_PATH"
+    
+    # Initialize module if it is missing in the build path
+    if [ ! -f "go.mod" ]; then
+        go mod init aerodesk 2>/dev/null || true
+    fi
+    
+    # Compile
     go build -ldflags="-s -w" -o aerodesk main.go
     
     # Global binary placement
