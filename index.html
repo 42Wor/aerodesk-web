@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hyprland Live Wallpaper Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom scrollbar for modern aesthetics */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #030712; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-teal-500 selection:text-gray-950 font-sans">
+
+  <!-- Header -->
+  <header class="py-16 text-center max-w-4xl mx-auto px-4">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-sm font-semibold mb-6">
+      <span>⚡ For Arch Linux & Hyprland</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500 mb-4 tracking-tight">
+      Hyprland Live Wallpaper Hub
+    </h1>
+    <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto">
+      Install hardware-accelerated, dynamic live wallpapers instantly using a single command in your terminal.
+    </p>
+  </header>
+
+  <!-- Gallery Section -->
+  <main class="max-w-6xl mx-auto px-4 pb-24 w-full flex-grow">
+    <div id="wallpaper-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Cards populated dynamically from wallpapers.json -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-900 bg-gray-950/50 py-8 text-center text-sm text-gray-500">
+    <p>© 2026 Hyprland Live Wallpaper Hub • Powered by Vercel & Hugging Face</p>
+  </footer>
+
+  <script>
+    const API_URL = window.location.origin;
+
+    async function loadWallpapers() {
+      try {
+        const response = await fetch(`${API_URL}/wallpapers.json`);
+        const data = await response.json();
+        const grid = document.getElementById('wallpaper-grid');
+
+        if (Object.keys(data).length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full text-center py-20 text-gray-500 border border-dashed border-gray-800 rounded-2xl">
+              <p class="text-lg">No wallpapers deployed yet.</p>
+              <p class="text-sm mt-1">Run the developer pipeline script to publish your first assets.</p>
+            </div>
+          `;
+          return;
+        }
+
+        for (const [hash, details] of Object.entries(data)) {
+          const previewUrl = `${API_URL}/previews/${hash}.gif`;
+
+          const card = document.createElement('div');
+          card.className = "group bg-gray-900/50 border border-gray-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col hover:border-teal-500/50 hover:bg-gray-900 transition-all duration-300";
+          
+          card.innerHTML = `
+            <div class="relative aspect-video bg-gray-950 overflow-hidden border-b border-gray-950">
+              <img src="${previewUrl}" alt="${details.title}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" onerror="this.src='https://placehold.co/600x400/030712/0ea5e9?text=${encodeURIComponent(details.title)}'">
+              <span class="absolute top-4 right-4 bg-gray-950/80 backdrop-blur-md border border-gray-800 text-teal-400 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-md uppercase">
+                ${details.format}
+              </span>
+            </div>
+            <div class="p-6 flex-grow flex flex-col justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-gray-100 tracking-tight mb-1 group-hover:text-teal-400 transition-colors duration-200">${details.title}</h3>
+                <p class="text-[10px] font-mono text-gray-600 mb-6">HASH ID: ${hash}</p>
+              </div>
+              <button onclick="copyCommand('${hash}', this)" class="w-full py-3 bg-gray-800/80 hover:bg-teal-600 text-gray-200 hover:text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
+                Copy Setup Command
+              </button>
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+      } catch (err) {
+        console.error("Failed to fetch wallpapers database:", err);
+      }
+    }
+
+    function copyCommand(hash, button) {
+      const command = `curl -sSL ${API_URL}/install.sh | bash -s -- ${hash}`;
+      navigator.clipboard.writeText(command).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Copied! ✓";
+        button.classList.remove('bg-gray-800/80', 'hover:bg-teal-600');
+        button.classList.add('bg-teal-600');
+        
+        setTimeout(() => {
+          button.innerText = originalText;
+          button.classList.remove('bg-teal-600');
+          button.classList.add('bg-gray-800/80', 'hover:bg-teal-600');
+        }, 2000);
+      });
+    }
+
+    loadWallpapers();
+  </script>
+</body>
+</html>
