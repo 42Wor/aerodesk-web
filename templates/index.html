@@ -3,50 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hyprland Live Wallpaper Hub</title>
+  <title>AeroDesk | Workspace Engine</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Custom scrollbar for modern aesthetics */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #030712; }
     ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #374151; }
   </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-teal-500 selection:text-gray-950 font-sans">
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-gray-950 font-sans">
 
-  <!-- Header -->
+  <!-- Header Section -->
   <header class="py-16 text-center max-w-4xl mx-auto px-4">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-sm font-semibold mb-6">
-      <span>⚡ For Arch Linux & Hyprland</span>
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-semibold mb-6">
+      <span>⚡ AeroDesk Engine v1.0.0</span>
     </div>
     
-    <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-500 mb-4 tracking-tight">
-      Hyprland Live Wallpaper Hub
+    <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-400 to-blue-500 mb-4 tracking-tight">
+      AeroDesk Live Wallpaper Manager
     </h1>
     
     <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto mb-8">
-      Install hardware-accelerated, dynamic live wallpapers instantly using a single command in your terminal.
+      A lightweight, compiled, and hardware-accelerated CLI engine for beautiful workspaces on Arch Linux, macOS, and Windows.
     </p>
 
-    <!-- Global Revert / Fallback Control Button -->
-    <div class="inline-block">
-      <button onclick="copyRevertCommand(this)" class="px-5 py-2.5 bg-gray-900 border border-gray-800 hover:border-red-500/50 hover:bg-red-950/20 text-gray-400 hover:text-red-400 font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 shadow-xl focus:outline-none focus:ring-2 focus:ring-red-500/30">
-        Copy Revert / Disable Command
-      </button>
+    <!-- OS Selection Tabs -->
+    <div class="flex justify-center gap-4 mb-6">
+      <button onclick="switchTab('linux-tab', this)" class="tab-btn px-4 py-2 bg-cyan-600 text-white text-xs font-bold uppercase rounded-lg tracking-wider transition-all">Linux / macOS</button>
+      <button onclick="switchTab('windows-tab', this)" class="tab-btn px-4 py-2 bg-gray-900 border border-gray-800 text-gray-400 text-xs font-bold uppercase rounded-lg tracking-wider transition-all">Windows</button>
+    </div>
+
+    <!-- Installer Command Card -->
+    <div class="bg-gray-900 border border-gray-800 p-5 rounded-2xl max-w-xl mx-auto font-mono text-xs text-left shadow-2xl relative group overflow-hidden">
+      <div class="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      <!-- Linux Command -->
+      <div id="linux-tab" class="install-block">
+        <p class="text-cyan-400 mb-2"># Install AeroDesk CLI, handle migrations & resolve configurations:</p>
+        <div class="flex items-center justify-between gap-4">
+          <code class="cmd-text text-gray-300 select-all">curl -sSL https://wphub-xi.vercel.app/install.sh | bash</code>
+          <button onclick="copyInstallScript('linux-tab', this)" class="px-3 py-1.5 bg-gray-800 hover:bg-cyan-600 hover:text-white rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all">Copy</button>
+        </div>
+      </div>
+
+      <!-- Windows Command -->
+      <div id="windows-tab" class="install-block hidden">
+        <p class="text-cyan-400 mb-2"># Boot strap environment variables & compile AeroDesk on Windows:</p>
+        <div class="flex items-center justify-between gap-4">
+          <code class="cmd-text text-gray-300 select-all">irm https://wphub-xi.vercel.app/install.ps1 | iex</code>
+          <button onclick="copyInstallScript('windows-tab', this)" class="px-3 py-1.5 bg-gray-800 hover:bg-cyan-600 hover:text-white rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all">Copy</button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Gallery Section -->
-  <main class="max-w-6xl mx-auto px-4 pb-24 w-full flex-grow">
+  <!-- Gallery Grid -->
+  <main class="max-w-6xl mx-auto px-4 pb-16 w-full flex-grow">
     <div id="wallpaper-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <!-- Cards populated dynamically from wallpapers.json -->
+      <!-- Dynamically filled by loadWallpapers() -->
     </div>
   </main>
 
+  <!-- Brand Ecosystem Cross-Promotions -->
+  <section class="max-w-6xl mx-auto px-4 pb-24 border-t border-gray-900 pt-16 w-full">
+    <div class="text-center mb-12">
+      <h2 class="text-2xl font-bold text-gray-100 mb-2">The AeroDesk Developer Portfolio</h2>
+      <p class="text-gray-400 text-sm max-w-xl mx-auto">
+        AeroDesk is built as an open ecosystem alongside our custom database architectures and AI algorithms.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <!-- Card: MaazDB -->
+      <div class="bg-gray-900/40 border border-gray-900/80 hover:border-cyan-500/30 p-6 rounded-2xl transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold mb-4">
+            <span>📂 Database Engine</span>
+          </div>
+          <h3 class="text-lg font-bold text-gray-100 mb-2">MaazDB</h3>
+          <p class="text-gray-400 text-xs leading-relaxed mb-4">
+            A high-performance database built for developers requiring fast memory mapping, clean key-value lookups, and minimal overhead.
+          </p>
+        </div>
+        <a href="#" class="text-xs text-blue-400 hover:text-blue-300 font-semibold tracking-wider uppercase inline-flex items-center gap-1 transition-colors">
+          View Repository <span>→</span>
+        </a>
+      </div>
+
+      <!-- Card: Mellow Lab -->
+      <div class="bg-gray-900/40 border border-gray-900/80 hover:border-cyan-500/30 p-6 rounded-2xl transition-all duration-300 flex flex-col justify-between">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-semibold mb-4">
+            <span>🧠 Artificial Intelligence</span>
+          </div>
+          <h3 class="text-lg font-bold text-gray-100 mb-2">Mellow Lab</h3>
+          <p class="text-gray-400 text-xs leading-relaxed mb-4">
+            An exploratory research group focusing on custom machine learning models, natural language architectures, and automation experiments.
+          </p>
+        </div>
+        <a href="#" class="text-xs text-purple-400 hover:text-purple-300 font-semibold tracking-wider uppercase inline-flex items-center gap-1 transition-colors">
+          Explore Research <span>→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
-  <footer class="border-t border-gray-900 bg-gray-950/50 py-8 text-center text-sm text-gray-500">
-    <p>© 2026 Hyprland Live Wallpaper Hub • Powered by Vercel & Hugging Face</p>
+  <footer class="border-t border-gray-950 bg-gray-950/80 py-8 text-center text-sm text-gray-500">
+    <p>© 2026 AeroDesk Suite • Built alongside MaazDB & Mellow Lab</p>
   </footer>
 
   <script>
@@ -61,8 +126,8 @@
         if (Object.keys(data).length === 0) {
           grid.innerHTML = `
             <div class="col-span-full text-center py-20 text-gray-500 border border-dashed border-gray-800 rounded-2xl">
-              <p class="text-lg">No wallpapers deployed yet.</p>
-              <p class="text-sm mt-1">Run the developer pipeline script to publish your first assets.</p>
+              <p class="text-lg">No wallpapers deployed in the database.</p>
+              <p class="text-sm mt-1">Run your deployment pipeline to publish assets.</p>
             </div>
           `;
           return;
@@ -72,29 +137,26 @@
           const previewUrl = `${API_URL}/previews/${hash}.gif`;
 
           const card = document.createElement('div');
-          card.className = "group bg-gray-900/50 border border-gray-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col hover:border-teal-500/50 hover:bg-gray-900 transition-all duration-300";
+          card.className = "group bg-gray-900/30 border border-gray-900 rounded-2xl overflow-hidden shadow-2xl flex flex-col hover:border-cyan-500/50 hover:bg-gray-900/60 transition-all duration-300";
           
           card.innerHTML = `
             <div class="relative aspect-video bg-gray-950 overflow-hidden border-b border-gray-950">
               <img src="${previewUrl}" alt="${details.title}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" onerror="this.src='https://placehold.co/600x400/030712/0ea5e9?text=${encodeURIComponent(details.title)}'">
-              <span class="absolute top-4 right-4 bg-gray-950/80 backdrop-blur-md border border-gray-800 text-teal-400 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-md uppercase">
+              <span class="absolute top-4 right-4 bg-gray-950/80 backdrop-blur-md border border-gray-800 text-cyan-400 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-md uppercase">
                 ${details.format}
               </span>
             </div>
             <div class="p-6 flex-grow flex flex-col justify-between">
               <div>
-                <h3 class="text-lg font-bold text-gray-100 tracking-tight mb-1 group-hover:text-teal-400 transition-colors duration-200">${details.title}</h3>
-                <p class="text-[10px] font-mono text-gray-600 mb-6">HASH ID: ${hash}</p>
+                <h3 class="text-lg font-bold text-gray-100 tracking-tight mb-1 group-hover:text-cyan-400 transition-colors duration-200">${details.title}</h3>
+                <p class="text-[10px] font-mono text-gray-600 mb-6">AERODESK ID: ${hash}</p>
               </div>
               
               <div class="space-y-2">
-                <!-- Primary Auto Setup Command -->
-                <button onclick="copyCommand('${hash}', this)" class="w-full py-3 bg-gray-800/80 hover:bg-teal-600 text-gray-200 hover:text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
-                  Copy Setup Command
+                <button onclick="copyCommand('${hash}', this)" class="w-full py-3 bg-gray-800/80 hover:bg-cyan-600 text-gray-200 hover:text-white font-semibold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500/50">
+                  Copy Apply Command
                 </button>
-                
-                <!-- Fallback Direct CDN Video URL (For other desktop environments/WWMs) -->
-                <button onclick="copyDirectLink('${details.url}', this)" class="w-full py-2 bg-gray-950 border border-gray-800/80 hover:border-gray-700 text-gray-400 hover:text-gray-200 font-medium rounded-xl text-[10px] uppercase tracking-wider transition-all duration-200 focus:outline-none">
+                <button onclick="copyDirectLink('${details.url}', this)" class="w-full py-2 bg-gray-950 border border-gray-900 hover:border-gray-800 text-gray-400 hover:text-gray-200 font-medium rounded-xl text-[10px] uppercase tracking-wider transition-all duration-200 focus:outline-none">
                   Copy Direct Media Link
                 </button>
               </div>
@@ -103,56 +165,62 @@
           grid.appendChild(card);
         }
       } catch (err) {
-        console.error("Failed to fetch wallpapers database:", err);
+        console.error("Failed to parse wallpaper database:", err);
       }
     }
 
-    // Copies the dynamic hyprland setup command
-    function copyCommand(hash, button) {
-      const command = `curl -sSL ${API_URL}/install.sh | bash -s -- ${hash}`;
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.install-block').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('bg-cyan-600', 'text-white');
+        el.classList.add('bg-gray-900', 'border', 'border-gray-800', 'text-gray-400');
+      });
+      btn.classList.add('bg-cyan-600', 'text-white');
+      btn.classList.remove('bg-gray-900', 'border', 'border-gray-800', 'text-gray-400');
+    }
+
+    function copyInstallScript(tabId, button) {
+      const command = document.querySelector(`#${tabId} .cmd-text`).innerText;
       navigator.clipboard.writeText(command).then(() => {
         const originalText = button.innerText;
         button.innerText = "Copied! ✓";
-        button.classList.remove('bg-gray-800/80', 'hover:bg-teal-600');
-        button.classList.add('bg-teal-600');
-        
+        button.classList.add('bg-cyan-600', 'text-white');
         setTimeout(() => {
           button.innerText = originalText;
-          button.classList.remove('bg-teal-600');
-          button.classList.add('bg-gray-800/80', 'hover:bg-teal-600');
+          button.classList.remove('bg-cyan-600', 'text-white');
         }, 2000);
       });
     }
 
-    // Fallback: Copies the raw Hugging Face CDN URL directly
+    function copyCommand(hash, button) {
+      const command = `aerodesk apply ${hash}`;
+      navigator.clipboard.writeText(command).then(() => {
+        const originalText = button.innerText;
+        button.innerText = "Copied! ✓";
+        button.classList.remove('bg-gray-800/80', 'hover:bg-cyan-600');
+        button.classList.add('bg-cyan-600');
+        
+        setTimeout(() => {
+          button.innerText = originalText;
+          button.classList.remove('bg-cyan-600');
+          button.classList.add('bg-gray-800/80', 'hover:bg-cyan-600');
+        }, 2000);
+      });
+    }
+
     function copyDirectLink(url, button) {
       navigator.clipboard.writeText(url).then(() => {
         const originalText = button.innerText;
-        button.innerText = "Direct Link Copied! ✓";
-        button.classList.remove('text-gray-400', 'border-gray-800/80');
-        button.classList.add('text-teal-400', 'border-teal-500/30');
+        button.innerText = "Link Copied! ✓";
+        button.classList.remove('text-gray-400', 'border-gray-900');
+        button.classList.add('text-cyan-400', 'border-cyan-500/30');
         
         setTimeout(() => {
           button.innerText = originalText;
-          button.classList.remove('text-teal-400', 'border-teal-500/30');
-          button.classList.add('text-gray-400', 'border-gray-800/80');
-        }, 2000);
-      });
-    }
-
-    // Fallback: Copies the revert command to completely stop and uninstall mpvpaper autostart
-    function copyRevertCommand(button) {
-      const command = `curl -sSL ${API_URL}/install.sh | bash -s -- 0`;
-      navigator.clipboard.writeText(command).then(() => {
-        const originalText = button.innerText;
-        button.innerText = "Revert Command Copied! ✓";
-        button.classList.remove('text-gray-400', 'border-gray-800');
-        button.classList.add('text-red-400', 'border-red-500/50');
-        
-        setTimeout(() => {
-          button.innerText = originalText;
-          button.classList.remove('text-red-400', 'border-red-500/50');
-          button.classList.add('text-gray-400', 'border-gray-800');
+          button.classList.remove('text-cyan-400', 'border-cyan-500/30');
+          button.classList.add('text-gray-400', 'border-gray-900');
         }, 2000);
       });
     }

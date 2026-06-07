@@ -7,100 +7,96 @@ GREEN="\e[32m"
 RED="\e[31m"
 YELLOW="\e[33m"
 BLUE="\e[34m"
+CYAN="\e[36m"
 RESET="\e[0m"
 
-# Hardcoded domain automatically during build deployment
-API_URL="https://wphub-xi.vercel.app/"
-HASH="${1:-}"
+echo -e "${CYAN}==================================================${RESET}"
+echo -e "${CYAN}          AeroDesk Installer & Migrator           ${RESET}"
+echo -e "${CYAN}==================================================${RESET}"
 
-if [ -z "$HASH" ]; then
-    echo -e "${RED}[!] Error: No wallpaper ID provided.${RESET}"
-    echo -e "Usage: curl -sSL $API_URL/install.sh | bash -s -- <ID>"
+if [ "$(uname)" != "Linux" ] && [ "$(uname)" != "Darwin" ]; then
+    echo -e "${RED}[!] Error: AeroDesk install.sh supports Linux and macOS systems.${RESET}"
     exit 1
 fi
 
-echo -e "${BLUE}==================================================${RESET}"
-echo -e "${BLUE}      Piping Live Wallpaper Installer...          ${RESET}"
-echo -e "${BLUE}==================================================${RESET}"
-
-# Check/Install JQ (JSON Parser)
-if ! command -v jq &> /dev/null; then
-    echo -e "${YELLOW}[*] 'jq' is missing. Installing via pacman...${RESET}"
-    sudo pacman -S --noconfirm jq
-fi
-
-# Check/Install mpvpaper
-if ! command -v mpvpaper &> /dev/null; then
-    echo -e "${YELLOW}[*] 'mpvpaper' is missing. Installing via AUR...${RESET}"
-    if command -v yay &> /dev/null; then
-        yay -S --noconfirm mpvpaper
-    elif command -v paru &> /dev/null; then
-        paru -S --noconfirm mpvpaper
+# 1. Dependency Check
+echo -e "${YELLOW}[*] Validating Go compiler...${RESET}"
+if ! command -v go &> /dev/null; then
+    if command -v pacman &> /dev/null; then
+        echo -e "${YELLOW}[*] Installing Go via pacman...${RESET}"
+        sudo pacman -S --noconfirm go
+    elif command -v brew &> /dev/null; then
+        echo -e "${YELLOW}[*] Installing Go via homebrew...${RESET}"
+        brew install go
     else
-        echo -e "${RED}[!] No AUR helper found. Please install 'mpvpaper' manually.${RESET}"
+        echo -e "${RED}[!] Go compiler not found. Please install Go (golang) first.${RESET}"
         exit 1
     fi
 fi
 
-# 1. Fetch JSON mapping
-echo -e "${YELLOW}[*] Contacting database for asset information...${RESET}"
-DATABASE=$(curl -sSL "$API_URL/wallpapers.json")
-ENTRY=$(echo "$DATABASE" | jq -r ".[\"$HASH\"]")
+# 2. Setup Directory Structure
+LEGACY_DIR="$HOME/.local/share/backgrounds/live-wallpapers"
+NEW_DIR="$HOME/.local/share/backgrounds/aerodesk"
 
-if [ "$ENTRY" == "null" ]; then
-    echo -e "${RED}[!] Error: Wallpaper ID '$HASH' does not exist in our registry.${RESET}"
+echo -e "${YELLOW}[*] Configuring directory systems...${RESET}"
+mkdir -p "$NEW_DIR"
+
+# 3. Migrate Existing Wallpapers
+if [ -d "$LEGACY_DIR" ]; then
+    echo -e "${CYAN}[~] Legacy installation directory detected: $LEGACY_DIR${RESET}"
+    echo -e "${YELLOW}[*] Migrating wallpapers to AeroDesk directory...${RESET}"
+    
+    # Move actual background files, skipping old symlinks
+    find "$LEGACY_DIR" -type f ! -name "current_wallpaper" -exec cp -p -t "$NEW_DIR" {} + 2>/dev/null || true
+    
+    # Safely remove the legacy path
+    rm -rf "$LEGACY_DIR"
+    echo -e "${GREEN}[✔] Migrated assets and deleted old live-wallpapers directory.${RESET}"
+fi
+
+# 4. Clone, Compile, and Install AeroDesk CLI
+echo -e "${YELLOW}[*] Cloning source files...${RESET}"
+TEMP_BUILD_DIR=$(mktemp -d)
+
+git clone https://github.com/Maazwaheed/live-wallpaper-assets.git "$TEMP_BUILD_DIR" 2>/dev/null || true
+
+BUILD_PATH="$TEMP_BUILD_DIR"
+if [ ! -f "$BUILD_PATH/main.go" ] && [ -f "./main.go" ]; then
+    BUILD_PATH="."
+fi
+
+echo -e "${YELLOW}[*] Building Go CLI...${RESET}"
+if [ -d "$BUILD_PATH" ]; then
+    cd "$BUILD_PATH"
+    go build -ldflags="-s -w" -o aerodesk main.go
+    
+    # Global binary placement
+    if [ -w "/usr/local/bin" ]; then
+        mv aerodesk /usr/local/bin/
+    else
+        sudo mv aerodesk /usr/local/bin/
+    fi
+    echo -e "${GREEN}[✔] AeroDesk binary compiled and installed to: /usr/local/bin/aerodesk${RESET}"
+else
+    echo -e "${RED}[!] Source files missing. Build failed.${RESET}"
     exit 1
 fi
 
-TITLE=$(echo "$ENTRY" | jq -r ".title")
-URL=$(echo "$ENTRY" | jq -r ".url")
-EXT=$(echo "$ENTRY" | jq -r ".format")
+rm -rf "$TEMP_BUILD_DIR"
 
-echo -e "${GREEN}[+] Match found: $TITLE [${EXT^^}]${RESET}"
-
-# 2. Setup dynamic storage folder and paths
-WALLPAPER_STORE="$HOME/.local/share/backgrounds/live-wallpapers"
-SYMLINK_PATH="$WALLPAPER_STORE/current_wallpaper"
-mkdir -p "$WALLPAPER_STORE"
-
-# 3. Download from CDN
-echo -e "${YELLOW}[*] Downloading wallpaper asset...${RESET}"
-FILE_PATH="$WALLPAPER_STORE/$HASH.$EXT"
-curl -L -o "$FILE_PATH" "$URL"
-
-# 4. Generate symlink
-ln -sf "$FILE_PATH" "$SYMLINK_PATH"
-echo -e "${GREEN}[+] Dynamic symlink updated to: $FILE_PATH${RESET}"
-
-# 5. Monitor configuration and Hyprland append
-MONITOR=$(hyprctl monitors | grep "Monitor" | awk '{print $2}' | head -n 1)
-[ -z "$MONITOR" ] && MONITOR="eDP-1"
-
+# 5. Clean Old Configuration Files
 HYPR_CONFIG="$HOME/.config/hypr/hyprland.conf"
-AUTOSTART_LINE="exec-once = mpvpaper -o \"--loop-file=inf --no-audio --hwdec=auto\" $MONITOR $SYMLINK_PATH"
-
 if [ -f "$HYPR_CONFIG" ]; then
-    if grep -q "current_wallpaper" "$HYPR_CONFIG"; then
-        echo -e "${GREEN}[+] Hyprland is already configured to use the dynamic symlink.${RESET}"
-    else
-        # Remove legacy configs from older setups to keep files clean
-        sed -i 's/current_wallpaper.mp4/current_wallpaper/g' "$HYPR_CONFIG" 2>/dev/null || true
-        
-        if ! grep -q "current_wallpaper" "$HYPR_CONFIG"; then
-            echo -e "${YELLOW}[*] Writing autostart instructions to hyprland.conf...${RESET}"
-            echo -e "\n# Dynamic Live Wallpaper Manager" >> "$HYPR_CONFIG"
-            echo "$AUTOSTART_LINE" >> "$HYPR_CONFIG"
-        fi
-    fi
+    echo -e "${YELLOW}[*] Cleaning legacy references in hyprland.conf...${RESET}"
+    sed -i '/live-wallpapers/d' "$HYPR_CONFIG"
+    sed -i '/wallpaper-manager/d' "$HYPR_CONFIG"
+    sed -i '/# Dynamic Live Wallpaper Manager/d' "$HYPR_CONFIG"
+    echo -e "${GREEN}[✔] Legacy configs cleared.${RESET}"
 fi
 
-# 6. Apply instantly on the current screen session
-if pgrep mpvpaper > /dev/null; then
-    echo -e "${YELLOW}[*] Reloading mpvpaper display context...${RESET}"
-    killall mpvpaper
-    sleep 0.5
-fi
-
-mpvpaper -o "--loop-file=inf --no-audio --hwdec=auto" "$MONITOR" "$SYMLINK_PATH" & disown
-
-echo -e "${GREEN}[✔] Wallpaper successfully applied: $TITLE${RESET}"
+echo -e "${GREEN}==================================================${RESET}"
+echo -e "${GREEN}      AeroDesk Migration & Installation Complete! ${RESET}"
+echo -e "${GREEN}==================================================${RESET}"
+echo -e "Usage:"
+echo -e "  To list all backgrounds   : ${CYAN}aerodesk list${RESET}"
+echo -e "  To set a background       : ${CYAN}aerodesk apply <id>${RESET}"
