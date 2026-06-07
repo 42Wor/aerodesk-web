@@ -6,6 +6,7 @@
   <title>AeroDesk | Workspace Engine</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Clean custom scrollbars */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #030712; }
     ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
@@ -42,16 +43,16 @@
       <div id="linux-tab" class="install-block">
         <p class="text-cyan-400 mb-2"># Install AeroDesk CLI, handle migrations & resolve configurations:</p>
         <div class="flex items-center justify-between gap-4">
-          <code class="cmd-text text-gray-300 select-all">curl -sSL https://wphub-xi.vercel.app/install.sh | bash</code>
+          <code class="cmd-text text-gray-300 select-all">curl -sSL https://aerodesk-hub.vercel.app/install.sh | bash</code>
           <button onclick="copyInstallScript('linux-tab', this)" class="px-3 py-1.5 bg-gray-800 hover:bg-cyan-600 hover:text-white rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all">Copy</button>
         </div>
       </div>
 
       <!-- Windows Command -->
       <div id="windows-tab" class="install-block hidden">
-        <p class="text-cyan-400 mb-2"># Boot strap environment variables & compile AeroDesk on Windows:</p>
+        <p class="text-cyan-400 mb-2"># Bootstrap environment variables & compile AeroDesk on Windows:</p>
         <div class="flex items-center justify-between gap-4">
-          <code class="cmd-text text-gray-300 select-all">irm https://wphub-xi.vercel.app/install.ps1 | iex</code>
+          <code class="cmd-text text-gray-300 select-all">irm https://aerodesk-hub.vercel.app/install.ps1 | iex</code>
           <button onclick="copyInstallScript('windows-tab', this)" class="px-3 py-1.5 bg-gray-800 hover:bg-cyan-600 hover:text-white rounded-lg text-[10px] uppercase font-bold tracking-wider transition-all">Copy</button>
         </div>
       </div>
