@@ -54,8 +54,8 @@ fi
 echo -e "${YELLOW}[*] Cloning source files...${RESET}"
 TEMP_BUILD_DIR=$(mktemp -d)
 
-# corrected URL: cloning your CLI repository instead of the Hugging Face dataset
-git clone https://github.com/Maazwaheed/aerodesk-cli.git "$TEMP_BUILD_DIR" 2>/dev/null || true
+# Cloning from correct GitHub account (42Wor)
+git clone https://github.com/42Wor/aerodesk-cli.git "$TEMP_BUILD_DIR" 2>/dev/null || true
 
 BUILD_PATH="$TEMP_BUILD_DIR"
 if [ ! -f "$BUILD_PATH/main.go" ] && [ -f "./main.go" ]; then
@@ -66,12 +66,12 @@ echo -e "${YELLOW}[*] Building Go CLI...${RESET}"
 if [ -d "$BUILD_PATH" ]; then
     cd "$BUILD_PATH"
     
-    # Initialize module if it is missing in the build path
+    # Initialize Go module structure if absent
     if [ ! -f "go.mod" ]; then
         go mod init aerodesk 2>/dev/null || true
     fi
     
-    # Compile
+    # Compile the directory package safely
     go build -ldflags="-s -w" -o aerodesk .
     
     # Global binary placement

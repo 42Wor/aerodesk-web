@@ -28,7 +28,8 @@ Write-Host "[*] Fetching source code..." -ForegroundColor Yellow
 $TempDir = Join-Path $env:TEMP "AeroDeskBuild"
 If (Test-Path -Path $TempDir) { Remove-Item -Recurse -Force $TempDir }
 
-git clone https://github.com/Maazwaheed/live-wallpaper-assets.git $TempDir 2>$null
+# Cloning from correct GitHub account (42Wor)
+git clone https://github.com/42Wor/aerodesk-cli.git $TempDir 2>$null
 
 $BuildPath = $TempDir
 If (!(Test-Path -Path (Join-Path $BuildPath "main.go")) -and (Test-Path -Path ".\main.go")) {
@@ -37,7 +38,14 @@ If (!(Test-Path -Path (Join-Path $BuildPath "main.go")) -and (Test-Path -Path ".
 
 Write-Host "[*] Compiling executable..." -ForegroundColor Yellow
 cd $BuildPath
-go build -ldflags="-s -w" -o aerodesk.exe main.go
+
+# Initialize Go module structure if absent
+If (!(Test-Path -Path "go.mod")) {
+    go mod init aerodesk 2>$null
+}
+
+# Compile the directory package safely
+go build -ldflags="-s -w" -o aerodesk.exe .
 
 # Place executable inside AppData folder
 $BinDir = Join-Path $AeroDeskDir "bin"
