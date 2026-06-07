@@ -72,7 +72,7 @@ if [ -d "$BUILD_PATH" ]; then
     fi
     
     # Compile
-    go build -ldflags="-s -w" -o aerodesk main.go
+    go build -ldflags="-s -w" -o aerodesk .
     
     # Global binary placement
     if [ -w "/usr/local/bin" ]; then
