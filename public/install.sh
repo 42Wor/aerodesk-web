@@ -10,7 +10,7 @@ BLUE="\e[34m"
 RESET="\e[0m"
 
 # Hardcoded domain automatically during build deployment
-API_URL="https://your-vercel-domain.vercel.app"
+API_URL="https://wphub-xi.vercel.app/"
 HASH="${1:-}"
 
 if [ -z "$HASH" ]; then
