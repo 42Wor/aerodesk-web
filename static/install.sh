@@ -3,12 +3,12 @@
 set -euo pipefail
 
 # ANSI Color Codes
-GREEN="\e[32m"
-RED="\e[31m"
-YELLOW="\e[33m"
-BLUE="\e[34m"
-CYAN="\e[36m"
-RESET="\e[0m"
+GREEN="\033[32m"
+RED="\033[31m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+CYAN="\033[36m"
+RESET="\033[0m"
 
 echo -e "${CYAN}==================================================${RESET}"
 echo -e "${CYAN}          AeroDesk Installer & Migrator           ${RESET}"
@@ -50,51 +50,60 @@ if [ -d "$LEGACY_DIR" ]; then
     echo -e "${GREEN}[✔] Migrated assets and deleted old live-wallpapers directory.${RESET}"
 fi
 
-# 4. Clone, Compile, and Install AeroDesk CLI
-echo -e "${YELLOW}[*] Cloning source files...${RESET}"
-TEMP_BUILD_DIR=$(mktemp -d)
+# 4. Compile and Install AeroDesk CLI
+BUILD_PATH=""
+TEMP_BUILD_DIR=""
 
-# Cloning from correct GitHub account (42Wor)
-git clone https://github.com/42Wor/aerodesk-cli.git "$TEMP_BUILD_DIR" 2>/dev/null || true
-
-BUILD_PATH="$TEMP_BUILD_DIR"
-if [ ! -f "$BUILD_PATH/main.go" ] && [ -f "./main.go" ]; then
+if [ -f "./main.go" ]; then
+    echo -e "${YELLOW}[*] Local main.go detected. Using current workspace for compilation...${RESET}"
     BUILD_PATH="."
+else
+    echo -e "${YELLOW}[*] Cloning source files from GitHub...${RESET}"
+    TEMP_BUILD_DIR=$(mktemp -d)
+    if git clone https://github.com/42Wor/aerodesk-cli.git "$TEMP_BUILD_DIR" 2>/dev/null; then
+        BUILD_PATH="$TEMP_BUILD_DIR"
+    else
+        echo -e "${RED}[!] Error: Could not clone repository and no local main.go was found.${RESET}"
+        exit 1
+    fi
 fi
 
 echo -e "${YELLOW}[*] Building Go CLI...${RESET}"
-if [ -d "$BUILD_PATH" ]; then
-    cd "$BUILD_PATH"
-    
-    # Initialize Go module structure if absent
-    if [ ! -f "go.mod" ]; then
-        go mod init aerodesk 2>/dev/null || true
-    fi
-    
-    # Compile the directory package safely
-    go build -ldflags="-s -w" -o aerodesk .
-    
-    # Global binary placement
-    if [ -w "/usr/local/bin" ]; then
-        mv aerodesk /usr/local/bin/
-    else
-        sudo mv aerodesk /usr/local/bin/
-    fi
-    echo -e "${GREEN}[✔] AeroDesk binary compiled and installed to: /usr/local/bin/aerodesk${RESET}"
-else
-    echo -e "${RED}[!] Source files missing. Build failed.${RESET}"
-    exit 1
+ORIGINAL_DIR=$(pwd)
+cd "$BUILD_PATH"
+
+# Initialize Go module structure if absent
+if [ ! -f "go.mod" ]; then
+    go mod init aerodesk 2>/dev/null || true
 fi
 
-rm -rf "$TEMP_BUILD_DIR"
+# Compile package with optimization flags
+go build -ldflags="-s -w" -o aerodesk .
+
+# Global binary placement
+if [ -w "/usr/local/bin" ]; then
+    mv aerodesk /usr/local/bin/
+else
+    echo -e "${YELLOW}[*] Elevated permissions needed to install to /usr/local/bin...${RESET}"
+    sudo mv aerodesk /usr/local/bin/
+fi
+
+cd "$ORIGINAL_DIR"
+if [ -n "$TEMP_BUILD_DIR" ] && [ -d "$TEMP_BUILD_DIR" ]; then
+    rm -rf "$TEMP_BUILD_DIR"
+fi
+
+echo -e "${GREEN}[✔] AeroDesk binary compiled and installed to: /usr/local/bin/aerodesk${RESET}"
 
 # 5. Clean Old Configuration Files
 HYPR_CONFIG="$HOME/.config/hypr/hyprland.conf"
 if [ -f "$HYPR_CONFIG" ]; then
     echo -e "${YELLOW}[*] Cleaning legacy references in hyprland.conf...${RESET}"
-    sed -i '/live-wallpapers/d' "$HYPR_CONFIG"
-    sed -i '/wallpaper-manager/d' "$HYPR_CONFIG"
-    sed -i '/# Dynamic Live Wallpaper Manager/d' "$HYPR_CONFIG"
+    # macOS-safe inline replacement pattern
+    sed -i.bak -e '/live-wallpapers/d' \
+               -e '/wallpaper-manager/d' \
+               -e '/# Dynamic Live Wallpaper Manager/d' "$HYPR_CONFIG"
+    rm -f "${HYPR_CONFIG}.bak"
     echo -e "${GREEN}[✔] Legacy configs cleared.${RESET}"
 fi
 
@@ -103,4 +112,5 @@ echo -e "${GREEN}      AeroDesk Migration & Installation Complete! ${RESET}"
 echo -e "${GREEN}==================================================${RESET}"
 echo -e "Usage:"
 echo -e "  To list all backgrounds   : ${CYAN}aerodesk list${RESET}"
+echo -e "  To open setup menu        : ${CYAN}aerodesk config${RESET}"
 echo -e "  To set a background       : ${CYAN}aerodesk apply <id>${RESET}"

@@ -8,7 +8,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Alpine.js Core (Deferred for performance) -->
+  <!-- Alpine.js Core -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <style>
@@ -93,13 +93,13 @@
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
-        <span class="font-bold text-gray-100 tracking-tight text-sm uppercase">AeroDesk</span>
+        <a href="index.html" class="font-bold text-gray-100 tracking-tight text-sm uppercase hover:text-cyan-400 transition-colors">AeroDesk</a>
       </div>
       
       <div class="flex items-center gap-4">
         <!-- Documentation Endpoint Link -->
         <a 
-          href="/document/cli.html"
+          href="document/cli.html"
           class="text-xs text-gray-400 hover:text-cyan-400 font-medium transition-colors"
         >
           CLI Docs
@@ -111,7 +111,7 @@
           class="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900/60 hover:bg-gray-900 border border-gray-800 text-xs text-cyan-400 font-semibold rounded-lg transition-colors"
         >
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-          <span>v1.0.0</span>
+          <span>v1.1.0</span>
         </button>
       </div>
     </div>
@@ -363,13 +363,26 @@
       </div>
       
       <div class="space-y-6 overflow-y-auto max-h-96 pr-2">
+        <!-- New Release v1.1.0 -->
         <div class="relative pl-6 border-l border-cyan-500/30">
           <span class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-bold text-gray-200 uppercase">v1.0.0 Stable</span>
+            <span class="text-xs font-bold text-gray-200 uppercase">v1.1.0 Stable</span>
             <span class="text-[10px] text-gray-500 font-mono">June 2026</span>
           </div>
           <p class="text-xs text-gray-400 leading-relaxed">
+            Introduced the new interactive console configuration wizard (`aerodesk config`) and dedicated screen detection layout manager (`aerodesk monitors`). Added automatic, parallel thread generation to spawn independent rendering daemons across multiple displays to support multi-monitor setups.
+          </p>
+        </div>
+
+        <!-- Release v1.0.0 -->
+        <div class="relative pl-6 border-l border-cyan-500/10">
+          <span class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-cyan-950 border border-cyan-800"></span>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-bold text-gray-400 uppercase">v1.0.0 Stable</span>
+            <span class="text-[10px] text-gray-500 font-mono">June 2026</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed font-normal">
             Migration from the legacy live-wallpaper system to the unified AeroDesk platform. Added full Go-based CLI modules supporting cross-platform (Linux/macOS/Windows) execution, automated 90-day cached retention, and interactive portfolio linkages.
           </p>
         </div>
@@ -377,7 +390,7 @@
         <div class="relative pl-6 border-l border-cyan-500/10">
           <span class="absolute left-[-5px] top-1 w-2.5 h-2.5 rounded-full bg-cyan-950 border border-cyan-800"></span>
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-bold text-gray-400 uppercase">Pre-Release Build</span>
+            <span class="text-xs font-bold text-gray-500 uppercase">Pre-Release Build</span>
             <span class="text-[10px] text-gray-600 font-mono">May 2026</span>
           </div>
           <p class="text-xs text-gray-500 leading-relaxed">

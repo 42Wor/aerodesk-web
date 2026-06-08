@@ -8,7 +8,7 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Alpine.js Core (Deferred for performance) -->
+  <!-- Alpine.js Core -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <style>
@@ -25,6 +25,15 @@
   class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-gray-950 font-sans"
   x-data="{
     clipboardStatus: {},
+    activeCmd: 'config',
+    terminalOutputs: {
+      list: `$ aerodesk list\n\nID         TITLE                                    FORMAT     STATUS\n4fa0a7d    Furina - 4K Cook Pardon!                 MP4        Cached (12d old)\nd16a978    Summer Strawberries                      MP4        Not Cached\n9c2a8f3    Neon Streets Tokyo                       MP4        Cached (3d old)`,
+      monitors: `$ aerodesk monitors\n\n=== Active Monitor Layout List ===\n  [1] eDP-1 (Active)\n  [2] DP-1  (Active)\n\n• Detected active environment: Hyprland (Linux)`,
+      config: `$ aerodesk config\n\n=== AeroDesk Interactive Configuration Wizard ===\n\n[Step 1/2] Monitor Configuration Selection\nDetected active monitors on your system:\n  [1] eDP-1\n  [2] DP-1\n\nYour selection [default: all]: 1,2\n\n[Step 2/2] Performance Profile Selection\nChoose an MPV background rendering performance profile:\n  [1] Balanced (Default: hardware decoding enabled, silent, looped)\n  [2] Low GPU Power (Optimized for battery, skips frames if slow, fast decode)\n  [3] Custom (Manually enter your own preferred MPV flags)\n\nYour selection [default: 1]: 2\n\n[✔] Configuration successfully saved to config.json!`,
+      apply: `$ aerodesk apply 4fa0a7d\n\n[✔] Valid local asset found (12 days old). Skipping network download.\n[*] AeroDesk symlink updated.\n[✔] AeroDesk live background applied to eDP-1.\n[✔] AeroDesk live background applied to DP-1.`,
+      rollback: `$ aerodesk apply 0\n\n[*] Initiating fallback sequence. Disabling AeroDesk workspace engine...\n[✔] Original hyprland.conf configuration restored from backup.\n[✔] AeroDesk successfully deactivated. Original system background is restored!`,
+      clean: `$ aerodesk clean --all\n\n[*] Purging local workspace cache directory...\n[✔] Removed asset: 4fa0a7d.mp4 (Cached 12 days ago)\n[✔] Removed asset: 9c2a8f3.mp4 (Cached 3 days ago)\n[✔] Cache cleanup complete. Removed 2 files from cache.`
+    },
     copyText(text, key) {
       return new Promise((resolve) => {
         if (navigator.clipboard && window.isSecureContext) {
@@ -65,138 +74,208 @@
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
-        <a href="/" class="font-bold text-gray-100 tracking-tight text-sm uppercase hover:text-cyan-400 transition-colors">AeroDesk</a>
+        <a href="index.html" class="font-bold text-gray-100 tracking-tight text-sm uppercase hover:text-cyan-400 transition-colors">AeroDesk</a>
       </div>
       
       <div class="flex items-center gap-4">
-        <a href="/" class="text-xs text-gray-400 hover:text-cyan-400 font-medium transition-colors">Back to Gallery</a>
+        <a href="index.html" class="text-xs text-gray-400 hover:text-cyan-400 font-medium transition-colors">Back to Gallery</a>
       </div>
     </div>
   </nav>
 
   <!-- Main Content Wrapper -->
-  <main class="max-w-4xl mx-auto px-4 py-16 flex-grow w-full">
+  <main class="max-w-6xl mx-auto px-4 py-16 flex-grow w-full">
     <!-- Header -->
     <header class="mb-12">
-      <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 tracking-tight mb-4">
+      <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 tracking-tight mb-4">
         AeroDesk CLI Reference Guide
       </h1>
-      <p class="text-gray-400 text-sm leading-relaxed max-w-2xl">
-        Complete manual for the compiled `aerodesk` executable. Learn how the local cache engine, Hyprland autostart linkages, and system-level rollbacks work across different operating systems.
+      <p class="text-gray-400 text-sm leading-relaxed max-w-3xl">
+        Complete operational manual for the compiled `aerodesk` executable. Learn how the local cache engine, multi-monitor configuration wizards, and system fallbacks work on Unix and Windows systems.
       </p>
     </header>
 
-    <!-- Cache and 90-Day Policy Explanation -->
-    <section class="mb-12 bg-gray-900/20 border border-gray-900 p-6 rounded-2xl">
-      <h2 class="text-lg font-bold text-gray-100 mb-3 flex items-center gap-2">
-        <span class="w-1.5 h-4 bg-cyan-500 rounded-sm inline-block"></span>
-        Local Caching & 90-Day Lifespan Rule
-      </h2>
-      <p class="text-gray-400 text-xs leading-relaxed mb-4">
-        AeroDesk downloads selected live backgrounds locally to reduce network overhead and prevent repetitive downloads. Each downloaded file has an explicit **90-day retention lifespan** from its last used/modified timestamp.
-      </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-[10px] text-gray-400">
-        <div class="bg-gray-950 p-4 rounded-xl border border-gray-900">
-          <span class="text-cyan-400 block mb-1">Linux/macOS Cache Path</span>
-          ~/.local/share/backgrounds/aerodesk/
+    <!-- Cache and Multi-Monitor Guidelines Box -->
+    <section class="mb-16 bg-gray-900/20 border border-gray-900/60 p-8 rounded-2xl shadow-xl">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div>
+          <h2 class="text-lg font-bold text-gray-100 mb-3 flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-cyan-500 rounded-sm inline-block"></span>
+            90-Day Asset Lifespan Rule
+          </h2>
+          <p class="text-gray-400 text-xs leading-relaxed mb-4">
+            AeroDesk saves backgrounds locally to prevent redundant downloads and save your bandwidth. Cached assets expire automatically **90 days** from their last execution date unless accessed again.
+          </p>
+          <div class="flex flex-col gap-2 font-mono text-[10px] text-gray-500">
+            <div><strong class="text-cyan-400 font-medium">Linux/macOS Cache:</strong> ~/.local/share/backgrounds/aerodesk/</div>
+            <div><strong class="text-cyan-400 font-medium">Windows Cache:</strong> %AppData%\Roaming\AeroDesk\</div>
+          </div>
         </div>
-        <div class="bg-gray-950 p-4 rounded-xl border border-gray-900">
-          <span class="text-cyan-400 block mb-1">Windows Cache Path</span>
-          %AppData%\Roaming\AeroDesk\
-        </div>
-        <div class="bg-gray-950 p-4 rounded-xl border border-gray-900">
-          <span class="text-cyan-400 block mb-1">Asset Expiration Check</span>
-          Every 'apply' command triggers age evaluation.
+        <div>
+          <h2 class="text-lg font-bold text-gray-100 mb-3 flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-purple-500 rounded-sm inline-block"></span>
+            Multi-Monitor Layout Architecture
+          </h2>
+          <p class="text-gray-400 text-xs leading-relaxed mb-4">
+            Under Linux (Hyprland), AeroDesk queries your active displays and compiles distinct rendering daemons in parallel. Configured displays receive targeted video rendering threads using `mpvpaper` to maintain low system latency.
+          </p>
+          <div class="flex flex-col gap-2 font-mono text-[10px] text-gray-500">
+            <div><strong class="text-purple-400 font-medium">Auto-Detection:</strong> Queries JSON metadata via <code class="bg-gray-950 px-1 py-0.5 rounded">hyprctl monitors -j</code>.</div>
+            <div><strong class="text-purple-400 font-medium">Process Separation:</strong> Independent process loops avoid global thread blocking.</div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Command List -->
-    <section class="space-y-8">
-      <h2 class="text-xl font-bold text-gray-100 pb-2 border-b border-gray-900">CLI Commands Reference</h2>
+    <!-- Interactive Terminal Playground Section -->
+    <section class="mb-16">
+      <h2 class="text-xl font-bold text-gray-100 mb-6 flex items-center gap-2">
+        <span class="w-1.5 h-4 bg-teal-500 rounded-sm inline-block"></span>
+        Interactive Terminal Playground
+      </h2>
+      <p class="text-gray-400 text-xs leading-relaxed mb-8 max-w-2xl">
+        Click on any of the core CLI commands below to see a live simulation of the terminal output and configuration results.
+      </p>
 
-      <!-- Command: List -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-bold text-cyan-400 font-mono">aerodesk list</h3>
-          <span class="px-2 py-0.5 rounded bg-gray-900 text-gray-500 text-[10px] uppercase font-semibold">Query</span>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Sidebar Navigation Buttons -->
+        <div class="lg:col-span-4 space-y-3">
+          <!-- Command: config -->
+          <button 
+            @click="activeCmd = 'config'" 
+            :class="activeCmd === 'config' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk config</div>
+              <div class="text-[10px] text-gray-500 mt-1">Run configuration setup menu</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-cyan-400 font-mono">Wizard</span>
+          </button>
+
+          <!-- Command: monitors -->
+          <button 
+            @click="activeCmd = 'monitors'" 
+            :class="activeCmd === 'monitors' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk monitors</div>
+              <div class="text-[10px] text-gray-500 mt-1">Scan active system displays</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-teal-400 font-mono">Layout</span>
+          </button>
+
+          <!-- Command: list -->
+          <button 
+            @click="activeCmd = 'list'" 
+            :class="activeCmd === 'list' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk list</div>
+              <div class="text-[10px] text-gray-500 mt-1">List wallpapers from the API</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-purple-400 font-mono">Query</span>
+          </button>
+
+          <!-- Command: apply -->
+          <button 
+            @click="activeCmd = 'apply'" 
+            :class="activeCmd === 'apply' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk apply &lt;id&gt;</div>
+              <div class="text-[10px] text-gray-500 mt-1">Download and apply asset</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-green-400 font-mono">Deploy</span>
+          </button>
+
+          <!-- Command: rollback -->
+          <button 
+            @click="activeCmd = 'rollback'" 
+            :class="activeCmd === 'rollback' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk apply 0</div>
+              <div class="text-[10px] text-gray-500 mt-1">Uninstall configurations & rollback</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-red-400 font-mono">Rollback</span>
+          </button>
+
+          <!-- Command: clean -->
+          <button 
+            @click="activeCmd = 'clean'" 
+            :class="activeCmd === 'clean' ? 'bg-cyan-950/30 border-cyan-500/50 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.05)]' : 'bg-gray-900/20 border-gray-900 text-gray-400 hover:text-gray-200 hover:border-gray-800'"
+            class="w-full text-left p-4 rounded-xl border flex items-center justify-between transition-all duration-200"
+          >
+            <div>
+              <div class="text-xs font-mono font-bold">aerodesk clean --all</div>
+              <div class="text-[10px] text-gray-500 mt-1">Purge the wallpaper cache</div>
+            </div>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 bg-gray-950 rounded text-amber-400 font-mono">Purge</span>
+          </button>
         </div>
-        <p class="text-gray-400 text-xs leading-relaxed">
-          Queries your public Vercel registry (`wallpapers.json`) and prints a tabular overview of all available wallpapers, their format, and their local cache status.
-        </p>
-        <div class="bg-gray-950 border border-gray-900 rounded-xl overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between bg-gray-900/40 px-4 py-2 border-b border-gray-900/80 font-mono text-[10px] text-gray-500">
-            <span>Terminal Execution</span>
-            <button @click="copyText('aerodesk list', 'cmd_list')" class="hover:text-cyan-400" x-text="clipboardStatus['cmd_list'] ? 'Copied!' : 'Copy'"></button>
+
+        <!-- Simulated Interactive Terminal -->
+        <div class="lg:col-span-8 bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(6,182,212,0.02)]">
+          <div class="flex items-center justify-between bg-gray-900/60 px-4 py-3 border-b border-gray-900/80">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
+            </div>
+            <span class="text-[9px] text-gray-500 font-mono uppercase tracking-widest">AeroDesk Console Emulator</span>
           </div>
-          <pre class="p-4 font-mono text-xs text-gray-300 overflow-x-auto"><code>$ aerodesk list
-ID         TITLE                                    FORMAT     STATUS
-4fa0a7d    Furina - 4K Cook Pardon!                 MP4        Cached (12d old)
-d16a978    Summer Strawberries                      MP4        Not Cached</code></pre>
+          <div class="p-6 font-mono text-xs text-left text-cyan-400 min-h-[300px] bg-gray-950 overflow-x-auto relative">
+            <pre class="text-gray-300 leading-relaxed whitespace-pre" x-text="terminalOutputs[activeCmd]"></pre>
+            <button 
+              @click="copyText(terminalOutputs[activeCmd].split('\n\n')[0].replace('$ ', ''), 'playground_copy')"
+              class="absolute bottom-4 right-4 px-3 py-1.5 bg-gray-900/80 border border-gray-800 hover:border-cyan-500 hover:bg-cyan-950/30 text-gray-400 hover:text-cyan-400 rounded-lg text-[10px] font-bold tracking-wider transition-all duration-150"
+            >
+              <span x-text="clipboardStatus['playground_copy'] ? 'Copied Command! ✓' : 'Copy CLI Command'">Copy CLI Command</span>
+            </button>
+          </div>
         </div>
       </div>
+    </section>
 
-      <!-- Command: Apply -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-bold text-cyan-400 font-mono">aerodesk apply &lt;id&gt;</h3>
-          <span class="px-2 py-0.5 rounded bg-gray-900 text-gray-500 text-[10px] uppercase font-semibold">Deployment</span>
-        </div>
-        <p class="text-gray-400 text-xs leading-relaxed">
-          Downloads the wallpaper asset mapped to the given hash ID, saves it, creates a dynamic symlink (`current_wallpaper`), and instantly updates the background using platform-specific engines.
-        </p>
-        <div class="bg-gray-950 border border-gray-900 rounded-xl overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between bg-gray-900/40 px-4 py-2 border-b border-gray-900/80 font-mono text-[10px] text-gray-500">
-            <span>Terminal Execution</span>
-            <button @click="copyText('aerodesk apply 4fa0a7d', 'cmd_apply')" class="hover:text-cyan-400" x-text="clipboardStatus['cmd_apply'] ? 'Copied!' : 'Copy'"></button>
-          </div>
-          <pre class="p-4 font-mono text-xs text-gray-300 overflow-x-auto"><code>$ aerodesk apply 4fa0a7d
-[+] Valid local asset found (12 days old). Skipping network download.
-[+] AeroDesk symlink updated.
-[✔] AeroDesk live background applied.</code></pre>
-        </div>
-      </div>
+    <!-- Detailed Flag Reference Grid -->
+    <section class="space-y-6">
+      <h2 class="text-xl font-bold text-gray-100 pb-2 border-b border-b-gray-900">Config Parameters & Flags</h2>
+      <p class="text-gray-400 text-xs leading-relaxed max-w-2xl">
+        In addition to the interactive configuration menu, the binary accepts command line arguments to update settings programmatically.
+      </p>
 
-      <!-- Command: Disable / Fallback -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-bold text-cyan-400 font-mono">aerodesk apply 0</h3>
-          <span class="px-2 py-0.5 rounded bg-gray-900 text-gray-500 text-[10px] uppercase font-semibold">System Rollback</span>
-        </div>
-        <p class="text-gray-400 text-xs leading-relaxed">
-          Safely deactivates AeroDesk. It terminates the rendering processes (`killall mpvpaper`), removes the autostart configurations from your environment files, and restores your system back to your original configuration.
-        </p>
-        <div class="bg-gray-950 border border-gray-900 rounded-xl overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between bg-gray-900/40 px-4 py-2 border-b border-gray-900/80 font-mono text-[10px] text-gray-500">
-            <span>Terminal Execution</span>
-            <button @click="copyText('aerodesk apply 0', 'cmd_disable')" class="hover:text-cyan-400" x-text="clipboardStatus['cmd_disable'] ? 'Copied!' : 'Copy'"></button>
-          </div>
-          <pre class="p-4 font-mono text-xs text-gray-300 overflow-x-auto"><code>$ aerodesk apply 0
-[*] Initiating fallback sequence. Disabling AeroDesk workspace engine...
-[✔] Original hyprland.conf configuration restored from backup.
-[✔] AeroDesk successfully deactivated. Original system background is restored!</code></pre>
-        </div>
-      </div>
-
-      <!-- Command: Clean -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-base font-bold text-cyan-400 font-mono">aerodesk clean [--all]</h3>
-          <span class="px-2 py-0.5 rounded bg-gray-900 text-gray-500 text-[10px] uppercase font-semibold">Cache Maintenance</span>
-        </div>
-        <p class="text-gray-400 text-xs leading-relaxed">
-          Scans the local storage directory and purges files older than 90 days. Using the optional flag `--all` force-deletes all cached resources inside your AeroDesk directory immediately.
-        </p>
-        <div class="bg-gray-950 border border-gray-900 rounded-xl overflow-hidden shadow-xl">
-          <div class="flex items-center justify-between bg-gray-900/40 px-4 py-2 border-b border-gray-900/80 font-mono text-[10px] text-gray-500">
-            <span>Terminal Execution</span>
-            <button @click="copyText('aerodesk clean', 'cmd_clean')" class="hover:text-cyan-400" x-text="clipboardStatus['cmd_clean'] ? 'Copied!' : 'Copy'"></button>
-          </div>
-          <pre class="p-4 font-mono text-xs text-gray-300 overflow-x-auto"><code>$ aerodesk clean
-[*] Scanning local workspace storage path...
-[*] Removed expired resource: Alice Montage.mp4 (93 days old)
-[✔] Cache cleanup complete. Removed 1 files from cache.</code></pre>
-        </div>
+      <div class="overflow-hidden border border-gray-900 rounded-xl bg-gray-950">
+        <table class="w-full text-left font-mono text-xs text-gray-300">
+          <thead>
+            <tr class="bg-gray-900/40 text-gray-500 border-b border-gray-900">
+              <th class="p-4">Argument Flag</th>
+              <th class="p-4">Accepts Value</th>
+              <th class="p-4">Operational Definition</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-900/60">
+            <tr>
+              <td class="p-4 text-cyan-400 font-bold">--monitor</td>
+              <td class="p-4 text-gray-500">all | default | list</td>
+              <td class="p-4 text-gray-400">Specifies displays (e.g., <code class="bg-gray-900 px-1 rounded">--monitor="eDP-1,DP-1"</code>).</td>
+            </tr>
+            <tr>
+              <td class="p-4 text-cyan-400 font-bold">--mpv-opts</td>
+              <td class="p-4 text-gray-500">string</td>
+              <td class="p-4 text-gray-400">Injects custom player initialization parameters directly to the engine render loop.</td>
+            </tr>
+            <tr>
+              <td class="p-4 text-cyan-400 font-bold">--all</td>
+              <td class="p-4 text-gray-500">boolean (flag)</td>
+              <td class="p-4 text-gray-400">Enforces dynamic, immediate file purging of the whole cache when passed to clean.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>

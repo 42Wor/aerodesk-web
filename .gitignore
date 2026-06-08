@@ -1,0 +1,11 @@
+# Python bytecode caches
+__pycache__/
+*.py[cod]
+*$py.class
+.vscode/
+.venv/
+# Local deployment targets
+incoming/temp_*/
+archived/
+hf_dataset/
+vercel_api/
